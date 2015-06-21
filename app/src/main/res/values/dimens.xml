@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="height_list_item">72dp</dimen>
+    <dimen name="height_toy_title_text">12dp</dimen>
+    <dimen name="margin_toy_title_text">12dp</dimen>
+    <dimen name="margin_zero">0dp</dimen>
+    <dimen name="margin_10">10dp</dimen>
+    <dimen name="dp3">3dp</dimen>
+    <dimen name="dp5">5dp</dimen>
+    <dimen name="dp10">10dp</dimen>
+    <dimen name="dp20">20dp</dimen>
+</resources>

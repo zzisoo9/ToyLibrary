@@ -9,7 +9,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/android-async-http" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/universal-image-loader-1.9.1" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -2,5 +2,8 @@
     <string name="app_name">ToyLibrary</string>
 
     <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="mainlist_background_textview_text">TOY</string>
+    <string name="type1">type1</string>
+    <string name="type2">type2</string>
+    <string name="element_text">Element</string>
 </resources>
