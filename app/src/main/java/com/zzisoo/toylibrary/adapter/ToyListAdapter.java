@@ -17,6 +17,10 @@
 package com.zzisoo.toylibrary.adapter;
 
 import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,9 +29,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.zzisoo.toylibrary.App;
 import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
+import com.zzisoo.toylibrary.fragment.ProductListViewFragment;
+import com.zzisoo.toylibrary.vo.Product;
 import com.zzisoo.toylibrary.vo.Toy;
 
 import java.util.Random;
@@ -38,8 +45,13 @@ import java.util.Random;
 public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHolder> {
     private static final String TAG = "ToyListAdapter";
 
-    private Toy[] mDataSet;
+    private  static Toy[] mDataSet;
 
+    public static int getClickedPostion() {
+        return mClickedPostion;
+    }
+
+    private  static int mClickedPostion = 0;
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView mTvTitle;
@@ -53,7 +65,23 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
                     Log.d(TAG, "Element " + getPosition() + " clicked.");
+                    Bundle bundle = new Bundle();
+                    Gson gson = new Gson();
+                    Product[] products = mDataSet[getPosition()].getProducts();
+                    bundle.putString("Products", gson.toJson(products));
+                    mClickedPostion= getPosition();
+                    Log.e(TAG,"mClickedPostion:" + mClickedPostion);
+
+                    Fragment fragment = new ProductListViewFragment();
+                    fragment.setArguments(bundle);
+
+                    FragmentTransaction transaction = ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction();
+                    transaction.setCustomAnimations(R.anim.enter, R.anim.exit,R.anim.popenter, R.anim.popexit);
+                    transaction.addToBackStack(getClass().getSimpleName());
+                    transaction.replace(R.id.main_list_fragment, fragment);
+                    transaction.commit();
                 }
             });
             vh = v;
@@ -113,7 +141,6 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
         Log.d(TAG, "Element " + position + " set.");
-
         // Get element from your dataset at this position and replace the contents of the view
         // with that element
         View v = viewHolder.getVh();
@@ -147,4 +174,6 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
     public int getItemCount() {
         return mDataSet.length;
     }
+
+
 }

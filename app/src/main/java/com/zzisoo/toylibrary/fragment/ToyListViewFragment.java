@@ -34,6 +34,7 @@ import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.ResponseHandlerInterface;
+
 import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
 import com.zzisoo.toylibrary.adapter.ToyListAdapter;
@@ -48,16 +49,16 @@ import org.apache.http.HttpResponse;
  * Demonstrates the use of {@link RecyclerView} with a {@link LinearLayoutManager} and a
  * {@link GridLayoutManager}.
  */
-public class ListViewFragment extends Fragment {
+public class ToyListViewFragment extends Fragment {
     public static final int MSG_FINISH = 1;
     public static final int MSG_OBJ = 2;
     private Handler mActivityHandler;
 
-    private static final String TAG = "ListViewFragment";
+    private static final String TAG = "ToyListViewFragment";
     private static final String KEY_LAYOUT_MANAGER = "layoutManager";
     private static final int SPAN_COUNT = 1;
-    private static final int DATASET_COUNT = 60;
     private LayoutManagerType mLayoutType;
+
 
     private enum LayoutManagerType {
         GRID_LAYOUT_MANAGER,
@@ -73,7 +74,8 @@ public class ListViewFragment extends Fragment {
     protected RecyclerView mToyListView;
     protected ToyListAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
-    protected String[] mDataset;
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,6 +84,33 @@ public class ListViewFragment extends Fragment {
 
         // Initialize dataset, this data would usually come from a local content provider or
         // remote server.
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mToyListView.setAdapter(mAdapter);
+        if(mAdapter!=null){
+
+            final int lastClickedPostion = mAdapter.getClickedPostion();
+            Log.e(TAG, "mClickedPostion:" + lastClickedPostion);
+            mToyListView.scrollToPosition(0);
+
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mToyListView.scrollToPosition(lastClickedPostion);
+                }
+            }, 100);
+        }
+
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+
     }
 
     @Override
@@ -110,19 +139,16 @@ public class ListViewFragment extends Fragment {
                         }
                     }
 
+                    Gson gson = new Gson();
+                    String strList = gson.toJson(list);
+
                     mAdapter = new ToyListAdapter(list);
-                    // Set ToyListAdapter as the adapter for RecyclerView.
                     mToyListView.setAdapter(mAdapter);
                 }
             }
         };
 
-        // BEGIN_INCLUDE(initializeRecyclerView)
         mToyListView = (RecyclerView) rootView.findViewById(R.id.toyListView);
-
-        // LinearLayoutManager is used here, this will layout the elements in a similar fashion
-        // to the way ListView would layout elements. The RecyclerView.LayoutManager defines how
-        // elements are laid out.
         mLayoutManager = new LinearLayoutManager(getActivity());
 
 
@@ -130,10 +156,10 @@ public class ListViewFragment extends Fragment {
             // Restore saved layout manager type.
             mLayoutType = (LayoutManagerType) savedInstanceState.getSerializable(KEY_LAYOUT_MANAGER);
         }else{
-            mLayoutType = LayoutManagerType.STAGGEREDGRID_LAYOUT_MANAGER;
+            mLayoutType = LayoutManagerType.GRID_LAYOUT_MANAGER;
         }
 
-        setRecyclerViewLayoutManager(LayoutManagerType.STAGGEREDGRID_LAYOUT_MANAGER);
+        setRecyclerViewLayoutManager(LayoutManagerType.GRID_LAYOUT_MANAGER);
         return rootView;
     }
 
