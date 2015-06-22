@@ -10,7 +10,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.Display;
 import android.view.Window;
 
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
 import com.zzisoo.toylibrary.fragment.ToyListViewFragment;
@@ -20,8 +19,6 @@ public class MainListActivity extends FragmentActivity {
 
 
     private static final String TAG = "MainListActivity";
-
-    private SlidingUpPanelLayout mLayout;
 
     private Context mContext;
 
@@ -84,4 +81,6 @@ public class MainListActivity extends FragmentActivity {
         transaction.commit();
 
     }
+
+
 }

@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.zzisoo.toylibrary"
-        minSdkVersion 10
+        minSdkVersion 11
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
@@ -28,5 +28,4 @@ dependencies {
     compile 'com.google.code.gson:gson:2.2.4'
     compile project(':android-async-http')
     compile project(':universal-image-loader-1.9.1')
-    compile 'com.sothree.slidinguppanel:library:3.0.0'
 }

@@ -16,9 +16,11 @@
 
 package com.zzisoo.toylibrary.fragment;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,15 +30,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.ResponseHandlerInterface;
-
 import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
+import com.zzisoo.toylibrary.SharedPref;
 import com.zzisoo.toylibrary.adapter.ToyListAdapter;
 import com.zzisoo.toylibrary.popup.IntroProgressPopupDialog;
 import com.zzisoo.toylibrary.vo.Product;
@@ -52,12 +55,17 @@ import org.apache.http.HttpResponse;
 public class ToyListViewFragment extends Fragment {
     public static final int MSG_FINISH = 1;
     public static final int MSG_OBJ = 2;
+    private static final String BUNDLE_RECYCLER_LAYOUT = "BUNDLE_RECYCLER_LAYOUT";
     private Handler mActivityHandler;
 
     private static final String TAG = "ToyListViewFragment";
     private static final String KEY_LAYOUT_MANAGER = "layoutManager";
     private static final int SPAN_COUNT = 1;
     private LayoutManagerType mLayoutType;
+    private int lastFirstVisiblePosition =0;
+    private SharedPref mPref;
+
+    private Bundle mArguments;
 
 
     private enum LayoutManagerType {
@@ -65,6 +73,7 @@ public class ToyListViewFragment extends Fragment {
         LINEAR_LAYOUT_MANAGER,
         STAGGEREDGRID_LAYOUT_MANAGER
     }
+
 
     protected LayoutManagerType mCurrentLayoutManagerType;
 
@@ -80,8 +89,9 @@ public class ToyListViewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getData();
+        mPref = new SharedPref(getActivity());
 
+        getData();
         // Initialize dataset, this data would usually come from a local content provider or
         // remote server.
     }
@@ -93,25 +103,30 @@ public class ToyListViewFragment extends Fragment {
         if(mAdapter!=null){
 
             final int lastClickedPostion = mAdapter.getClickedPostion();
+            final int lastClickedPrePostion = lastClickedPostion-1  < 0 ? 0: lastClickedPostion-1;
             Log.e(TAG, "mClickedPostion:" + lastClickedPostion);
-            mToyListView.scrollToPosition(0);
+            mToyListView.scrollToPosition(lastClickedPrePostion);
 
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    mToyListView.scrollToPosition(lastClickedPostion);
+                    mToyListView.smoothScrollToPosition(lastClickedPostion);
                 }
             }, 100);
+
+
         }
 
     }
 
+
     @Override
-    public void onViewStateRestored(Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
+    public void onPause() {
+        super.onPause();
 
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -159,6 +174,7 @@ public class ToyListViewFragment extends Fragment {
             mLayoutType = LayoutManagerType.GRID_LAYOUT_MANAGER;
         }
 
+
         setRecyclerViewLayoutManager(LayoutManagerType.GRID_LAYOUT_MANAGER);
         return rootView;
     }
@@ -205,9 +221,23 @@ public class ToyListViewFragment extends Fragment {
         // Save currently selected layout manager.
         savedInstanceState.putSerializable(KEY_LAYOUT_MANAGER, mLayoutType);
         super.onSaveInstanceState(savedInstanceState);
+
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putParcelable(BUNDLE_RECYCLER_LAYOUT, mToyListView.getLayoutManager().onSaveInstanceState());
+
     }
 
 
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if(savedInstanceState != null)
+        {
+            Parcelable savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
+            mToyListView.getLayoutManager().onRestoreInstanceState(savedRecyclerLayoutState);
+        }
+
+    }
     private void getData() {
         AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
 
@@ -245,8 +275,9 @@ public class ToyListViewFragment extends Fragment {
                 mIntroProgressPopup.dismiss();
                 Message msg = new Message();
                 msg.arg1 = MSG_OBJ;
-
-
+                mPref.setUpdateMode();
+                mPref.setStringPref(SharedPref.PREF_TOYS_LIST, responseStr);
+                mPref.updateFinish();
                 Gson gson = new Gson();
                 Toy[] arrToy = gson.fromJson(responseStr, Toy[].class);
 
@@ -262,13 +293,14 @@ public class ToyListViewFragment extends Fragment {
                 Log.d(TAG, "Code [" + i + "] ");
                 mIntroProgressPopup.setProgressBarVisible(false);
                 mIntroProgressPopup.setText("ERROR Code: " + i);
-                Runnable mRunnable = new Runnable() {
-                    @Override
-                    public void run() {
 
-                    }
-                };
-                delayedFinish();
+                String oldData = mPref.getStringPref(SharedPref.PREF_TOYS_LIST);
+                if (oldData.equals(SharedPref.NODATA_STRING)) {
+                    delayedFinish();
+                } else {
+
+                    delayLoadOldData(oldData);
+                }
             }
 
             private void delayedFinish() {
@@ -294,6 +326,35 @@ public class ToyListViewFragment extends Fragment {
                     }
                 }, 5000);
             }
+
+            private void delayLoadOldData(final String oldData) {
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mIntroProgressPopup.setText("ERROR But Found OldData.");
+                    }
+                }, 1000);
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Gson gson = new Gson();
+                        Toy[] arrToy = gson.fromJson(oldData, Toy[].class);
+                        Message msg = new Message();
+                        msg.arg1 = MSG_OBJ;
+                        msg.obj = arrToy;
+                        mActivityHandler.dispatchMessage(msg);
+                        mIntroProgressPopup.dismiss();
+                    }
+                }, 2000);
+
+
+            }
         });
+
     }
+
+
+
+
 }

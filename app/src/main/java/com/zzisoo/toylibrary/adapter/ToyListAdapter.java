@@ -49,9 +49,13 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
 
     public static int getClickedPostion() {
         return mClickedPostion;
+    }    public static int getClickedOldPostion() {
+        return mClickedOldPostion;
     }
 
     private  static int mClickedPostion = 0;
+    private static int mClickedOldPostion = 0;
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView mTvTitle;
@@ -65,17 +69,16 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
                     Log.d(TAG, "Element " + getPosition() + " clicked.");
+                    mClickedPostion = getPosition();
                     Bundle bundle = new Bundle();
                     Gson gson = new Gson();
                     Product[] products = mDataSet[getPosition()].getProducts();
                     bundle.putString("Products", gson.toJson(products));
-                    mClickedPostion= getPosition();
-                    Log.e(TAG,"mClickedPostion:" + mClickedPostion);
 
                     Fragment fragment = new ProductListViewFragment();
                     fragment.setArguments(bundle);
+
 
                     FragmentTransaction transaction = ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction();
                     transaction.setCustomAnimations(R.anim.enter, R.anim.exit,R.anim.popenter, R.anim.popexit);
@@ -159,12 +162,12 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
         int R = r.nextInt(255);
         int G = r.nextInt(255);
         int B = r.nextInt(255);
-
         int strRBG = Color.rgb(R, G, B);
         ivToyImage.setBackgroundColor(strRBG);
         Log.e(TAG, ">>>>>" +toy.getDescription());
         ivToyImage.setImageResource(0);
         App.getImageLoader(v.getContext()).displayImage(bgImage, ivToyImage);
+
 
     }
     // END_INCLUDE(recyclerViewOnBindViewHolder)
