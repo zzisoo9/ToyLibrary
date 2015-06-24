@@ -30,6 +30,7 @@ import com.github.ksoichiro.android.observablescrollview.ObservableRecyclerView;
 import com.github.ksoichiro.android.observablescrollview.ObservableScrollViewCallbacks;
 import com.github.ksoichiro.android.observablescrollview.ScrollState;
 import com.github.ksoichiro.android.observablescrollview.ScrollUtils;
+import com.github.ksoichiro.android.observablescrollview.Scrollable;
 import com.nineoldandroids.view.ViewHelper;
 import com.nineoldandroids.view.ViewPropertyAnimator;
 import com.zzisoo.toylibrary.R;
@@ -180,18 +181,23 @@ public class ViewPagerTabScrollViewActivity extends AppCompatActivity implements
             if (view == null) {
                 continue;
             }
-
-            ObservableRecyclerView scrollView = getObservableRecyclerView(view);
-            if (isShown) {
-                // Scroll up
-                if (0 < scrollView.getCurrentScrollY()) {
-                    scrollView.scrollTo(0, 0);
-                }
-            } else {
-                // Scroll down (to hide padding)
-                if (scrollView.getCurrentScrollY() < toolbarHeight) {
-                    scrollView.scrollTo(0, toolbarHeight);
-                }
+            propagateToolbarState(isShown, view, toolbarHeight);
+        }
+    }
+    private void propagateToolbarState(boolean isShown, View view, int toolbarHeight) {
+        Scrollable scrollView = (Scrollable) getObservableRecyclerView(view);
+        if (scrollView == null) {
+            return;
+        }
+        if (isShown) {
+            // Scroll up
+            if (0 < scrollView.getCurrentScrollY()) {
+                scrollView.scrollVerticallyTo(0);
+            }
+        } else {
+            // Scroll down (to hide padding)
+            if (scrollView.getCurrentScrollY() < toolbarHeight) {
+                scrollView.scrollVerticallyTo(toolbarHeight);
             }
         }
     }

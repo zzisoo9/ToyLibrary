@@ -16,6 +16,7 @@
 
 package com.zzisoo.toylibrary.fragment;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,6 +31,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.github.ksoichiro.android.observablescrollview.ObservableRecyclerView;
+import com.github.ksoichiro.android.observablescrollview.ObservableScrollView;
+import com.github.ksoichiro.android.observablescrollview.ObservableScrollViewCallbacks;
+import com.github.ksoichiro.android.observablescrollview.ScrollUtils;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -49,6 +54,8 @@ import org.apache.http.HttpResponse;
  * {@link GridLayoutManager}.
  */
 public class ToyListViewFragment extends Fragment {
+    public static final String ARG_INITIAL_POSITION = "ARG_INITIAL_POSITION";
+
     public static final int MSG_FINISH = 1;
     public static final int MSG_OBJ = 2;
     private static final String BUNDLE_RECYCLER_LAYOUT = "BUNDLE_RECYCLER_LAYOUT";
@@ -68,9 +75,9 @@ public class ToyListViewFragment extends Fragment {
 
 
     protected LayoutManagerType mCurrentLayoutManagerType;
-    protected RecyclerView mToyListView;
+    protected ObservableRecyclerView mToyListView;
     protected ToyListAdapter mAdapter;
-    protected RecyclerView.LayoutManager mLayoutManager;
+    protected ObservableRecyclerView.LayoutManager mLayoutManager;
 
 
     @Override
@@ -119,13 +126,39 @@ public class ToyListViewFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.toy_list_view_frag, container, false);
         rootView.setTag(TAG);
-        /**
-         * AsyncClient에서 결과를 넘겨줄때사용.
-         * MSG_FINISH : Error 또는 BackPress 받아서 앱종료할때 사용
-         */
 
 
-        mToyListView = (RecyclerView) rootView.findViewById(R.id.toyListView);
+        // 터치를액티비티쪽으로넘겨주는부분.
+        Activity parentActivity = getActivity();
+        final ObservableRecyclerView recyclerView = (ObservableRecyclerView) rootView.findViewById(R.id.toyListView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(parentActivity));
+        recyclerView.setHasFixedSize(false);
+        View headerView = LayoutInflater.from(parentActivity).inflate(R.layout.padding, null);
+
+        if (parentActivity instanceof ObservableScrollViewCallbacks) {
+            // Scroll to the specified offset after layout
+            Bundle args = getArguments();
+            if (args != null && args.containsKey(ARG_INITIAL_POSITION)) {
+                final int initialPosition = args.getInt(ARG_INITIAL_POSITION, 0);
+                ScrollUtils.addOnGlobalLayoutListener(recyclerView, new Runnable() {
+                    @Override
+                    public void run() {
+                        recyclerView.scrollVerticallyToPosition(initialPosition);
+                    }
+                });
+            }
+
+            // TouchInterceptionViewGroup should be a parent view other than ViewPager.
+            // This is a workaround for the issue #117:
+            // https://github.com/ksoichiro/Android-ObservableScrollView/issues/117
+            recyclerView.setTouchInterceptionViewGroup((ViewGroup) parentActivity.findViewById(R.id.root));
+
+            recyclerView.setScrollViewCallbacks((ObservableScrollViewCallbacks) parentActivity);
+        }
+
+        // 터치를액티비티쪽으로넘겨주는부분.
+
+        mToyListView = (ObservableRecyclerView) rootView.findViewById(R.id.toyListView);
         mLayoutManager = new LinearLayoutManager(getActivity());
 
         mActivityHandler = new Handler() {
@@ -158,6 +191,7 @@ public class ToyListViewFragment extends Fragment {
         } else {
             mLayoutType = LayoutManagerType.GRID_LAYOUT_MANAGER;
         }
+
 
 
         setRecyclerViewLayoutManager(LayoutManagerType.GRID_LAYOUT_MANAGER);
