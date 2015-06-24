@@ -20,6 +20,10 @@ android {
 }
 
 dependencies {
+    /*******************[android-observablescrollview:] -Start ********************************************/
+    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.github.ksoichiro:android-observablescrollview:+'
+    /*******************[android-observablescrollview:] -END ********************************************/
     compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'com.android.support:support-v4:22.2.0'
     compile 'com.android.support:gridlayout-v7:21.0.2'

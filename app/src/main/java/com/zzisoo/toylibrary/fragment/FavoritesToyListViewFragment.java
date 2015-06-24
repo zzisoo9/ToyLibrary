@@ -37,7 +37,7 @@ import com.loopj.android.http.ResponseHandlerInterface;
 import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
 import com.zzisoo.toylibrary.SharedPref;
-import com.zzisoo.toylibrary.adapter.ToyListAdapter;
+import com.zzisoo.toylibrary.adapter.FavoritesToyListAdapter;
 import com.zzisoo.toylibrary.popup.IntroProgressPopupDialog;
 import com.zzisoo.toylibrary.vo.Toy;
 
@@ -48,13 +48,13 @@ import org.apache.http.HttpResponse;
  * Demonstrates the use of {@link RecyclerView} with a {@link LinearLayoutManager} and a
  * {@link GridLayoutManager}.
  */
-public class ToyListViewFragment extends Fragment {
+public class FavoritesToyListViewFragment extends Fragment {
     public static final int MSG_FINISH = 1;
     public static final int MSG_OBJ = 2;
     private static final String BUNDLE_RECYCLER_LAYOUT = "BUNDLE_RECYCLER_LAYOUT";
     private Handler mActivityHandler;
 
-    private static final String TAG = "ToyListView";
+    private static final String TAG = "FavoritesToyListView";
     private static final String KEY_LAYOUT_MANAGER = "layoutManager";
     private static final int SPAN_COUNT = 1;
     private LayoutManagerType mLayoutType;
@@ -69,7 +69,7 @@ public class ToyListViewFragment extends Fragment {
 
     protected LayoutManagerType mCurrentLayoutManagerType;
     protected RecyclerView mToyListView;
-    protected ToyListAdapter mAdapter;
+    protected FavoritesToyListAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
 
 
@@ -117,7 +117,7 @@ public class ToyListViewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.toy_list_view_frag, container, false);
+        View rootView = inflater.inflate(R.layout.fav_toy_list_view_frag, container, false);
         rootView.setTag(TAG);
         /**
          * AsyncClient에서 결과를 넘겨줄때사용.
@@ -125,7 +125,7 @@ public class ToyListViewFragment extends Fragment {
          */
 
 
-        mToyListView = (RecyclerView) rootView.findViewById(R.id.toyListView);
+        mToyListView = (RecyclerView) rootView.findViewById(R.id.favtoyListView);
         mLayoutManager = new LinearLayoutManager(getActivity());
 
         mActivityHandler = new Handler() {
@@ -139,7 +139,7 @@ public class ToyListViewFragment extends Fragment {
                     Gson gson = new Gson();
                     String strList = gson.toJson(list);
 
-                    mAdapter = new ToyListAdapter(list);
+                    mAdapter = new FavoritesToyListAdapter(list);
                     mToyListView.setAdapter(mAdapter);
                 }
             }

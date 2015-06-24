@@ -13,7 +13,7 @@ public class Config {
     public static int AUTO_HIDE_DELAY_MILLIS = 3000;
 
 
-    public static final String URL_BOOKS_LIST = "http://toylib.herokuapp.com/products";
+    public static final String URL_BOOKS_LIST = "http://toylib.cafe24app.com/products";
     public static final String URL_SERVER = "http://www.yicare.or.kr";
 
 }

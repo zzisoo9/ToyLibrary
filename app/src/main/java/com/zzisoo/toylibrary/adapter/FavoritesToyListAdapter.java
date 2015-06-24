@@ -42,8 +42,8 @@ import java.util.Random;
 /**
  * Provide views to RecyclerView with data from mDataSet.
  */
-public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHolder> {
-    private static final String TAG = "ToyListAdapter";
+public class FavoritesToyListAdapter extends RecyclerView.Adapter<FavoritesToyListAdapter.ViewHolder> {
+    private static final String TAG = "favoritesToyListAdapter";
 
     private  static Toy[] mDataSet;
 
@@ -83,7 +83,7 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
                     FragmentTransaction transaction = ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction();
                     transaction.setCustomAnimations(R.anim.enter, R.anim.exit,R.anim.popenter, R.anim.popexit);
                     transaction.addToBackStack(getClass().getSimpleName());
-                    transaction.replace(R.id.toyListViewWraper, fragment);
+                    transaction.replace(R.id.favToyListViewWraper, fragment);
                     transaction.commit();
                 }
             });
@@ -123,7 +123,7 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
      *
      * @param dataSet String[] containing the data to populate views to be used by RecyclerView.
      */
-    public ToyListAdapter(Toy[] dataSet) {
+    public FavoritesToyListAdapter(Toy[] dataSet) {
         mDataSet = dataSet;
     }
 

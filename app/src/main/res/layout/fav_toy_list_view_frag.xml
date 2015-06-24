@@ -16,16 +16,15 @@
 -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/toyListViewWraper"
+    android:id="@+id/favToyListViewWraper"
 
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
     <com.github.ksoichiro.android.observablescrollview.ObservableRecyclerView
-        android:id="@+id/toyListView"
+        android:id="@+id/favtoyListView"
         android:paddingTop="50dp"
-
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical" />

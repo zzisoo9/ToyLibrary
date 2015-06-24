@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.view.Display;
-import android.view.Window;
 
 import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
@@ -27,14 +26,13 @@ public class MainListActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
 
         mContext = this;
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
         setConfig();
 
         if (savedInstanceState == null) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             ToyListViewFragment fragment = new ToyListViewFragment();
-            transaction.replace(R.id.main_list_fragment, fragment);
+            transaction.replace(R.id.middle, fragment);
             transaction.addToBackStack(getClass().getSimpleName());
             transaction.commit();
         }
@@ -65,7 +63,7 @@ public class MainListActivity extends FragmentActivity {
     public void removeCurrentFragment() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-        Fragment currentFrag = getSupportFragmentManager().findFragmentById(R.id.main_list_fragment);
+        Fragment currentFrag = getSupportFragmentManager().findFragmentById(R.id.middle);
 
 
         String fragName = "NONE";
