@@ -30,4 +30,15 @@
         <item name="colorAccent">@color/accent</item>
     </style>
 
+
+
+    <style name="ActionBar" parent="Theme.AppCompat">
+        <item name="android:background">#2d333d</item>
+        <item name="android:titleTextStyle">@style/ActionBar.TitleTextStyle</item>
+    </style>
+
+    <style name="ActionBar.TitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
 </resources>

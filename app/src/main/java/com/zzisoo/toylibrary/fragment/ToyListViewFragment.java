@@ -16,7 +16,8 @@
 
 package com.zzisoo.toylibrary.fragment;
 
-import android.app.Activity;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -32,9 +33,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.github.ksoichiro.android.observablescrollview.ObservableRecyclerView;
-import com.github.ksoichiro.android.observablescrollview.ObservableScrollView;
 import com.github.ksoichiro.android.observablescrollview.ObservableScrollViewCallbacks;
-import com.github.ksoichiro.android.observablescrollview.ScrollUtils;
+import com.github.ksoichiro.android.observablescrollview.ScrollState;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -42,6 +42,7 @@ import com.loopj.android.http.ResponseHandlerInterface;
 import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
 import com.zzisoo.toylibrary.SharedPref;
+import com.zzisoo.toylibrary.activity.BaseActivity;
 import com.zzisoo.toylibrary.adapter.ToyListAdapter;
 import com.zzisoo.toylibrary.popup.IntroProgressPopupDialog;
 import com.zzisoo.toylibrary.vo.Toy;
@@ -53,7 +54,7 @@ import org.apache.http.HttpResponse;
  * Demonstrates the use of {@link RecyclerView} with a {@link LinearLayoutManager} and a
  * {@link GridLayoutManager}.
  */
-public class ToyListViewFragment extends Fragment {
+public class ToyListViewFragment extends Fragment  {
     public static final String ARG_INITIAL_POSITION = "ARG_INITIAL_POSITION";
 
     public static final int MSG_FINISH = 1;
@@ -67,34 +68,35 @@ public class ToyListViewFragment extends Fragment {
     private LayoutManagerType mLayoutType;
     private SharedPref mPref;
     private Bundle mArguments;
+    private Context mContext;
+
+    private int lastScrollPosition = 0;
+
+
     private enum LayoutManagerType {
         GRID_LAYOUT_MANAGER,
         LINEAR_LAYOUT_MANAGER,
         STAGGEREDGRID_LAYOUT_MANAGER
     }
 
-
     protected LayoutManagerType mCurrentLayoutManagerType;
     protected ObservableRecyclerView mToyListView;
     protected ToyListAdapter mAdapter;
     protected ObservableRecyclerView.LayoutManager mLayoutManager;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPref = new SharedPref(getActivity());
-
-
-
+        mContext = (Context) getActivity();
     }
+
 
     @Override
     public void onResume() {
         super.onResume();
         mToyListView.setAdapter(mAdapter);
         if (mAdapter != null) {
-
             final int lastClickedPostion = mAdapter.getClickedPostion();
             final int lastClickedPrePostion = lastClickedPostion - 1 < 0 ? 0 : lastClickedPostion - 1;
             Log.e(TAG, "mClickedPostion:" + lastClickedPostion);
@@ -107,10 +109,7 @@ public class ToyListViewFragment extends Fragment {
                     mToyListView.smoothScrollToPosition(lastClickedPostion);
                 }
             }, 100);
-
-
         }
-
     }
 
 
@@ -122,45 +121,75 @@ public class ToyListViewFragment extends Fragment {
 
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+//        int position = mToyListView.getChildPosition(childView);
+        super.onConfigurationChanged(newConfig);
+        int cols = 1;
+        cols = Config.getSpans(newConfig);
+        mLayoutManager = new GridLayoutManager(getActivity(), cols);
+        mCurrentLayoutManagerType = LayoutManagerType.GRID_LAYOUT_MANAGER;
+        mToyListView.setLayoutManager(mLayoutManager);
+        Log.e(TAG, "lastScrollPosition:" + lastScrollPosition);
+        mToyListView.getAdapter().notifyItemRangeChanged(0,lastScrollPosition);
+        mToyListView.scrollToPosition(lastScrollPosition);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         View rootView = inflater.inflate(R.layout.toy_list_view_frag, container, false);
-        rootView.setTag(TAG);
+        mToyListView = (ObservableRecyclerView) rootView.findViewById(R.id.toyListRecyclerView);
 
+        ((BaseActivity)mContext).mScrollable = mToyListView;
 
-        // 터치를액티비티쪽으로넘겨주는부분.
-        Activity parentActivity = getActivity();
-        final ObservableRecyclerView recyclerView = (ObservableRecyclerView) rootView.findViewById(R.id.toyListView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(parentActivity));
-        recyclerView.setHasFixedSize(false);
-        View headerView = LayoutInflater.from(parentActivity).inflate(R.layout.padding, null);
+        mToyListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                int visibleItemCount = recyclerView.getChildCount();
+                int totalItemCount = recyclerView.getLayoutManager().getItemCount();
+                lastScrollPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
 
-        if (parentActivity instanceof ObservableScrollViewCallbacks) {
-            // Scroll to the specified offset after layout
-            Bundle args = getArguments();
-            if (args != null && args.containsKey(ARG_INITIAL_POSITION)) {
-                final int initialPosition = args.getInt(ARG_INITIAL_POSITION, 0);
-                ScrollUtils.addOnGlobalLayoutListener(recyclerView, new Runnable() {
-                    @Override
-                    public void run() {
-                        recyclerView.scrollVerticallyToPosition(initialPosition);
-                    }
-                });
+                Log.e(TAG, visibleItemCount + "/" + totalItemCount + "/" + lastScrollPosition);
             }
 
-            // TouchInterceptionViewGroup should be a parent view other than ViewPager.
-            // This is a workaround for the issue #117:
-            // https://github.com/ksoichiro/Android-ObservableScrollView/issues/117
-            recyclerView.setTouchInterceptionViewGroup((ViewGroup) parentActivity.findViewById(R.id.root));
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
 
-            recyclerView.setScrollViewCallbacks((ObservableScrollViewCallbacks) parentActivity);
-        }
+        mToyListView.setScrollViewCallbacks(new ObservableScrollViewCallbacks() {
+            @Override
+            public void onScrollChanged(int i, boolean b, boolean b1) {
 
-        // 터치를액티비티쪽으로넘겨주는부분.
+            }
 
-        mToyListView = (ObservableRecyclerView) rootView.findViewById(R.id.toyListView);
+            @Override
+            public void onDownMotionEvent() {
+
+            }
+
+            @Override
+            public void onUpOrCancelMotionEvent(ScrollState scrollState) {
+                BaseActivity act = (BaseActivity)mContext;
+                Log.e("DEBUG", "onUpOrCancelMotionEvent: " + scrollState);
+                if (scrollState == ScrollState.UP) {
+                    if (act.toolbarIsShown()) {
+                        act.hideToolbar();
+                    }
+                } else if (scrollState == ScrollState.DOWN) {
+                    if (act.toolbarIsHidden()) {
+                        act.showToolbar();
+                    }
+                }
+            }
+        });
+
+        rootView.setTag(TAG);
+
         mLayoutManager = new LinearLayoutManager(getActivity());
-
         mActivityHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -192,8 +221,6 @@ public class ToyListViewFragment extends Fragment {
             mLayoutType = LayoutManagerType.GRID_LAYOUT_MANAGER;
         }
 
-
-
         setRecyclerViewLayoutManager(LayoutManagerType.GRID_LAYOUT_MANAGER);
         return rootView;
     }
@@ -207,13 +234,12 @@ public class ToyListViewFragment extends Fragment {
         int scrollPosition = 0;
 
         // If a layout manager has already been set, get current scroll position.
-        if (mToyListView.getLayoutManager() != null) {
-            scrollPosition = ((LinearLayoutManager) mToyListView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
-        }
+        scrollPosition = getScrollInitPosition();
+        int nSpans = Config.getSpans(getResources().getConfiguration());
 
         switch (layoutManagerType) {
             case GRID_LAYOUT_MANAGER:
-                mLayoutManager = new GridLayoutManager(getActivity(), SPAN_COUNT);
+                mLayoutManager = new GridLayoutManager(getActivity(), nSpans);
                 mCurrentLayoutManagerType = LayoutManagerType.GRID_LAYOUT_MANAGER;
                 break;
             case LINEAR_LAYOUT_MANAGER:
@@ -233,6 +259,15 @@ public class ToyListViewFragment extends Fragment {
 
         mToyListView.setLayoutManager(mLayoutManager);
         mToyListView.scrollToPosition(scrollPosition);
+    }
+
+    private int getScrollInitPosition() {
+        int scrollPosition = 0;
+        if (mToyListView.getLayoutManager() != null) {
+            scrollPosition = ((LinearLayoutManager) mToyListView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+            Log.e(TAG , "scrollPosition:"+scrollPosition);
+        }
+        return scrollPosition;
     }
 
     @Override
@@ -361,6 +396,7 @@ public class ToyListViewFragment extends Fragment {
         });
 
     }
+
     private void dataLoad(String strData) {
         Gson gson = new Gson();
         Toy[] arrToy = gson.fromJson(strData, Toy[].class);

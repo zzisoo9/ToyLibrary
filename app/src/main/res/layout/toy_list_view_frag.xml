@@ -22,12 +22,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.github.ksoichiro.android.observablescrollview.ObservableRecyclerView
-        android:id="@+id/toyListView"
-        android:paddingTop="50dp"
 
+    <com.github.ksoichiro.android.observablescrollview.ObservableRecyclerView
+        android:id="@+id/toyListRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical" />
+        android:layout_marginTop="?attr/actionBarSize" />
 
 </FrameLayout>
