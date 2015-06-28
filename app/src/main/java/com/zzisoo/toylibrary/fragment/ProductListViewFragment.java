@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 
 import com.google.gson.Gson;
 import com.zzisoo.toylibrary.R;
+import com.zzisoo.toylibrary.activity.BaseActivity;
 import com.zzisoo.toylibrary.adapter.ProductListAdapter;
 import com.zzisoo.toylibrary.vo.Product;
 
@@ -53,6 +54,21 @@ public class ProductListViewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        BaseActivity act = (BaseActivity) this.getActivity();
+
+        if (act.toolbarIsShown()) {
+            act.hideToolbar();
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        BaseActivity act = (BaseActivity) this.getActivity();
+        if (act.toolbarIsHidden()) {
+            act.showToolbar();
+        }
 
 
     }
@@ -65,6 +81,7 @@ public class ProductListViewFragment extends Fragment {
         String strProducts = getArguments().getString("Products");
         Gson gson = new Gson();
         mProducts = gson.fromJson(strProducts, Product[].class);
+
 
         mAdapter = new ProductListAdapter(mProducts);
 
@@ -89,7 +106,6 @@ public class ProductListViewFragment extends Fragment {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
     }
-
 
 
 }

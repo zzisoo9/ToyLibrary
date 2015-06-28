@@ -17,6 +17,7 @@ public class SharedPref {
 
     public static final String PREF_PRE = "com.zzisoo.toylibrary.";
     public static final String PREF_TOYS_LIST = "com.zzisoo.toylibrary.toys.list";
+    public static final String PREF_FAVORITE_LIST = "FavList";
 
     public static final int NODATA_INT = -1;
     public static final long NODATA_LONG = -1l;

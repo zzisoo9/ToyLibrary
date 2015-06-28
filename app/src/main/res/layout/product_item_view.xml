@@ -14,7 +14,7 @@
  limitations under the License.
 -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
@@ -25,22 +25,62 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_margin="10dp"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
 
         <TextView
-            android:id="@+id/tvProductPid"
+            android:id="@+id/tvDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="10"
+            android:text="@string/element_text"
+            android:textColor="#0c0c0c"
+            android:textSize="@dimen/detailviewText" />
+
+        <TextView
+            android:id="@+id/tvCategory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/element_text"
-            android:textColor="#0c0c0c" />
+            android:textColor="#0c0c0c"
+
+            android:textSize="@dimen/detailviewText" />
 
         <TextView
-            android:id="@+id/tvProductIsLent"
+            android:id="@+id/tvPid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#5c5c5c" />
+            android:text="@string/element_text"
 
+            android:textColor="#0c0c0c"
+            android:textSize="@dimen/detailviewText" />
+
+        <TextView
+            android:id="@+id/tvGoods"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/element_text"
+
+            android:textColor="#0c0c0c"
+            android:textSize="@dimen/detailviewText" />
+
+        <TextView
+            android:id="@+id/tvRecommendAge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/element_text"
+
+            android:textColor="#0c0c0c"
+            android:textSize="@dimen/detailviewText" />
+
+        <TextView
+            android:id="@+id/tvManufacturer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/element_text"
+
+            android:textColor="#0c0c0c"
+            android:textSize="@dimen/detailviewText" />
 
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

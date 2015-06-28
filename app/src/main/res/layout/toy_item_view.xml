@@ -16,6 +16,7 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:autofit="http://schemas.android.com/tools"
     android:id="@+id/list_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -28,8 +29,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="@dimen/dp10"
         android:layout_margin="@dimen/dp10"
+        android:layout_marginBottom="@dimen/dp10"
         android:background="@drawable/card_background"
         android:orientation="vertical">
 
@@ -45,56 +46,63 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:gravity="center"
+                android:maxLines="1"
                 android:text="@string/loading"
                 android:textColor="#ffffff"
-                android:textSize="50sp" />
+                android:textSize="30sp" />
 
             <ImageView
                 android:id="@+id/ivToyImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:adjustViewBounds="false"
-                android:paddingBottom="1px"
                 android:contentDescription="@string/app_name"
+                android:paddingBottom="1px"
                 android:scaleType="fitXY" />
+
 
         </FrameLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#ffffff"
-            android:layout_gravity="center_horizontal">
+            android:layout_gravity="center_horizontal"
+            android:background="#ffffff">
 
-            <TextView
-                android:id="@+id/tvToyTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginLeft="@dimen/dp20"
-                android:layout_marginRight="@dimen/dp20"
-                android:gravity="center_vertical|left"
-                android:maxLines="2"
-                android:minHeight="@dimen/abc_action_bar_default_height_material"
-                android:text="@string/element_text"
-                android:textColor="#484a4f"
-                android:textSize="@dimen/dp12"
-                android:textStyle="bold" />
+
+
+            <me.grantland.widget.AutofitTextView
+                    android:id="@+id/tvToyTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginLeft="@dimen/dp50"
+                    android:layout_marginRight="@dimen/dp20"
+                    android:gravity="center_vertical|left"
+                    android:minHeight="@dimen/abc_action_bar_default_height_material"
+                    android:text="@string/element_text"
+                    android:maxLines="1"
+                    android:textColor="#484a4f"
+                    android:textSize="@dimen/dp12"
+                    android:textStyle="bold"
+                    autofit:minTextSize="8sp" />
+
 
             <fr.castorflex.android.flipimageview.library.FlipImageView
                 android:id="@+id/imageview"
                 android:layout_width="@dimen/dp30"
                 android:layout_height="@dimen/dp30"
+                android:layout_gravity="top|left"
                 android:layout_margin="@dimen/dp10"
-                android:tint="#4487c2"
-                android:layout_gravity="bottom|right"
                 android:scaleType="fitXY"
                 android:src="@drawable/abc_btn_rating_star_off_mtrl_alpha"
+                android:tint="#4487c2"
                 app:flipDrawable="@drawable/abc_btn_rating_star_on_mtrl_alpha"
                 app:flipDuration="500"
                 app:flipInterpolator="@android:anim/decelerate_interpolator"
                 app:flipRotations="y|z"
-                app:reverseRotation="true" />
+                app:reverseRotation="false" />
+
 
         </FrameLayout>
 

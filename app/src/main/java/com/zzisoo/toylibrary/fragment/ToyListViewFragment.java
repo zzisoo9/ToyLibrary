@@ -23,6 +23,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -72,6 +74,8 @@ public class ToyListViewFragment extends Fragment  {
 
     private int lastScrollPosition = 0;
 
+    private DrawerLayout dlDrawer;
+    private ActionBarDrawerToggle dtToggle;
 
     private enum LayoutManagerType {
         GRID_LAYOUT_MANAGER,
@@ -122,11 +126,9 @@ public class ToyListViewFragment extends Fragment  {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-//        int position = mToyListView.getChildPosition(childView);
         super.onConfigurationChanged(newConfig);
-        int cols = 1;
-        cols = Config.getSpans(newConfig);
-        mLayoutManager = new GridLayoutManager(getActivity(), cols);
+
+        mLayoutManager = new GridLayoutManager(getActivity(), Config.getSpans(getActivity()));
         mCurrentLayoutManagerType = LayoutManagerType.GRID_LAYOUT_MANAGER;
         mToyListView.setLayoutManager(mLayoutManager);
         Log.e(TAG, "lastScrollPosition:" + lastScrollPosition);
@@ -141,7 +143,7 @@ public class ToyListViewFragment extends Fragment  {
         View rootView = inflater.inflate(R.layout.toy_list_view_frag, container, false);
         mToyListView = (ObservableRecyclerView) rootView.findViewById(R.id.toyListRecyclerView);
 
-        ((BaseActivity)mContext).mScrollable = mToyListView;
+        ((BaseActivity)mContext).mScrollableChildView = mToyListView;
 
         mToyListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -160,33 +162,35 @@ public class ToyListViewFragment extends Fragment  {
             }
         });
 
-        mToyListView.setScrollViewCallbacks(new ObservableScrollViewCallbacks() {
-            @Override
-            public void onScrollChanged(int i, boolean b, boolean b1) {
 
-            }
+        if(Config.IS_HIDDENABLE_TOOLBAR) {
+            mToyListView.setScrollViewCallbacks(new ObservableScrollViewCallbacks() {
+                @Override
+                public void onScrollChanged(int i, boolean b, boolean b1) {
 
-            @Override
-            public void onDownMotionEvent() {
+                }
 
-            }
+                @Override
+                public void onDownMotionEvent() {
 
-            @Override
-            public void onUpOrCancelMotionEvent(ScrollState scrollState) {
-                BaseActivity act = (BaseActivity)mContext;
-                Log.e("DEBUG", "onUpOrCancelMotionEvent: " + scrollState);
-                if (scrollState == ScrollState.UP) {
-                    if (act.toolbarIsShown()) {
-                        act.hideToolbar();
-                    }
-                } else if (scrollState == ScrollState.DOWN) {
-                    if (act.toolbarIsHidden()) {
-                        act.showToolbar();
+                }
+
+                @Override
+                public void onUpOrCancelMotionEvent(ScrollState scrollState) {
+                    BaseActivity act = (BaseActivity) mContext;
+                    Log.e("DEBUG", "onUpOrCancelMotionEvent: " + scrollState);
+                    if (scrollState == ScrollState.UP) {
+                        if (act.toolbarIsShown()) {
+                            act.hideToolbar();
+                        }
+                    } else if (scrollState == ScrollState.DOWN) {
+                        if (act.toolbarIsHidden()) {
+                            act.showToolbar();
+                        }
                     }
                 }
-            }
-        });
-
+            });
+        }
         rootView.setTag(TAG);
 
         mLayoutManager = new LinearLayoutManager(getActivity());
@@ -235,11 +239,10 @@ public class ToyListViewFragment extends Fragment  {
 
         // If a layout manager has already been set, get current scroll position.
         scrollPosition = getScrollInitPosition();
-        int nSpans = Config.getSpans(getResources().getConfiguration());
 
         switch (layoutManagerType) {
             case GRID_LAYOUT_MANAGER:
-                mLayoutManager = new GridLayoutManager(getActivity(), nSpans);
+                mLayoutManager = new GridLayoutManager(getActivity(), Config.getSpans(getActivity()));
                 mCurrentLayoutManagerType = LayoutManagerType.GRID_LAYOUT_MANAGER;
                 break;
             case LINEAR_LAYOUT_MANAGER:
@@ -397,7 +400,7 @@ public class ToyListViewFragment extends Fragment  {
 
     }
 
-    private void dataLoad(String strData) {
+    public void dataLoad(String strData) {
         Gson gson = new Gson();
         Toy[] arrToy = gson.fromJson(strData, Toy[].class);
         Message msg = new Message();

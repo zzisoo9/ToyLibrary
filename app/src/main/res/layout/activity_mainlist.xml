@@ -1,0 +1,81 @@
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dl_activity_mainlist_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:id="@+id/fl_activity_mainlist_content_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffffff"
+        tools:context=".MainListActivity">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <FrameLayout
+                android:id="@+id/fl_activity_mainlist_content_fragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true"></FrameLayout>
+
+        </LinearLayout>
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tb_activity_mainlist_hidden_toolbar"
+
+            style="@style/ActionBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:minHeight="?attr/actionBarSize">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:weightSum="1"
+                android:orientation="horizontal">
+                <me.grantland.widget.AutofitTextView
+                    android:id="@+id/tv_activity_mainlist_hidden_toolbar_title"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="TT"
+                    android:textAlignment="center"
+                    android:textColor="#ffffff"
+                    android:textSize="@dimen/dp20" />
+
+                <me.grantland.widget.AutofitTextView
+                    android:id="@+id/tv_activity_mainlist_hidden_toolbar_favorite"
+                    android:layout_width="?attr/actionBarSize"
+                    android:layout_height="?attr/actionBarSize"
+                    android:gravity="center"
+                    android:text="@string/star"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/dp30"/>
+            </LinearLayout>
+
+        </android.support.v7.widget.Toolbar>
+
+
+    </FrameLayout>
+
+
+    <ListView
+        android:id="@+id/lv_activity_mainlist_nav_drawer"
+        android:layout_width="240dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:background="#EDEDED"
+        android:choiceMode="singleChoice"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp" />
+
+</android.support.v4.widget.DrawerLayout>

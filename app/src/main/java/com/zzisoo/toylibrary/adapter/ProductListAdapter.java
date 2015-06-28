@@ -16,14 +16,20 @@
 
 package com.zzisoo.toylibrary.adapter;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.zzisoo.toylibrary.App;
+import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
 import com.zzisoo.toylibrary.vo.Product;
 
@@ -39,12 +45,27 @@ public class ProductListAdapter extends RecyclerView.Adapter<ProductListAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private final TextView mTvProductIsLent;
+        public TextView getmTvProductPid() {
+            return mTvProductPid;
+        }
+
+        public TextView getmTvProductTitle() {
+            return mTvProductTitle;
+        }
+
+        public ImageView getmIvProductImageView() {
+            return mIvProductImageView;
+        }
+
+        private final ImageView mIvProductImageView;
         private final TextView mTvProductPid;
+        private final TextView mTvProductTitle;
         private final View vh;
 
         public ViewHolder(View v) {
             super(v);
+            mIvProductImageView = null;
+
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -52,15 +73,11 @@ public class ProductListAdapter extends RecyclerView.Adapter<ProductListAdapter.
                 }
             });
             vh = v;
-            mTvProductIsLent = (TextView) v.findViewById(R.id.tvProductPid);
-            mTvProductPid = (TextView) v.findViewById(R.id.tvProductIsLent);
+
+            mTvProductPid = (TextView) v.findViewById(R.id.tvDescription);
+            mTvProductTitle = (TextView) v.findViewById(R.id.tvCategory);
         }
-        public TextView getTvTitle() {
-            return mTvProductIsLent;
-        }
-        public TextView getTvDesc() {
-            return mTvProductPid;
-        }
+
         public View getVh() {
             return vh;
         }
@@ -92,13 +109,16 @@ public class ProductListAdapter extends RecyclerView.Adapter<ProductListAdapter.
         // Get element from your dataset at this position and replace the contents of the view
         // with that element
         View v = viewHolder.getVh();
-        TextView tvProductIsLent = viewHolder.getTvDesc();
-        TextView tvProductPid = viewHolder.getTvTitle();
+        ImageView ivProductImageView = viewHolder.getmIvProductImageView();
+        TextView tvProductPid = viewHolder.getmTvProductPid();
+        TextView tvProductDescription = viewHolder.getmTvProductTitle();
 
         Product product = mDataSet[position];
+        String bgImage = Config.HOST_SERVER_URL + product.getImage().replace("..", "");
 
+        App.getImageLoader(v.getContext()).displayImage(bgImage, ivProductImageView);
         tvProductPid.setText(product.getPid());
-        tvProductIsLent.setText(product.getIsLent());
+        tvProductDescription.setText(product.getDescription());
 
         Random r = new Random();
         r.setSeed(System.currentTimeMillis());
@@ -108,7 +128,7 @@ public class ProductListAdapter extends RecyclerView.Adapter<ProductListAdapter.
 
         int strRBG = Color.rgb(R, G, B);
         v.setBackgroundColor(strRBG);
-
+        setItemSize(v);
 
     }
 
@@ -116,4 +136,22 @@ public class ProductListAdapter extends RecyclerView.Adapter<ProductListAdapter.
     public int getItemCount() {
         return mDataSet.length;
     }
+
+
+    private void setItemSize(View v) {
+        Context c = v.getContext();
+        WindowManager wm = (WindowManager) v.getContext().getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        int x = display.getWidth();
+        int y = display.getHeight();
+        int nwidth = x < y ? x : y;
+        if (Config.isLandscape(c)) {
+
+        } else {
+        }
+
+
+       // v.findViewById(R.id.flToyImageProductBackground).setLayoutParams(new LinearLayout.LayoutParams(nwidth, nwidth));
+    }
+
 }

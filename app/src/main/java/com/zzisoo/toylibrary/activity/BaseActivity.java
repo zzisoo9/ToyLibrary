@@ -16,24 +16,57 @@
 
 package com.zzisoo.toylibrary.activity;
 
+import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.github.ksoichiro.android.observablescrollview.Scrollable;
 import com.nineoldandroids.animation.ValueAnimator;
 import com.nineoldandroids.view.ViewHelper;
+import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
+import com.zzisoo.toylibrary.utils.Typefaces;
+
+import me.grantland.widget.AutofitHelper;
 
 public abstract class BaseActivity<S extends Scrollable> extends AppCompatActivity {
-    private static final int NUM_OF_ITEMS = 100;
-    private static final int NUM_OF_ITEMS_FEW = 3;
-    public Toolbar mToolbar;
-    public S mScrollable;
 
+    public Toolbar mTbHiddenable;
+    public S mScrollableChildView;
+
+    public int getShortWidth(){
+        Context c = this.getApplicationContext();
+        WindowManager wm = (WindowManager) c.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        int x = display.getWidth();
+        int y = display.getHeight();
+        int nwidth = x;
+        if (Config.isLandscape(c)) {
+            nwidth = x < y ? x : y;
+        } else {
+            nwidth = x < y ? x : y;
+        }
+
+
+        Rect rectangle= new Rect();
+        Window window= getWindow();
+        window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
+        int statusBarHeight= rectangle.top;
+        int contentViewTop=
+                window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
+        int titleBarHeight= contentViewTop - statusBarHeight;
+
+        return  nwidth;
+    }
 
     protected int getActionBarSize() {
         TypedValue typedValue = new TypedValue();
@@ -45,18 +78,34 @@ public abstract class BaseActivity<S extends Scrollable> extends AppCompatActivi
         return actionBarSize;
     }
 
+    protected void setToolBar(String strTitle, String strFontFileNameAtAssetsFolder_NULLABLE) {
+        if(strFontFileNameAtAssetsFolder_NULLABLE == null){
+            strFontFileNameAtAssetsFolder_NULLABLE = "Satisfy-Regular.ttf";
+        }
+        mTbHiddenable = (Toolbar) findViewById(R.id.tb_activity_mainlist_hidden_toolbar);
+        setSupportActionBar(mTbHiddenable);
+        TextView tvActivityMainlistHiddenToolbarTitle = (TextView) mTbHiddenable.findViewById(R.id.tv_activity_mainlist_hidden_toolbar_title);
 
+        TextView tvActivityMainlistHiddenToolbarFavorite = (TextView) mTbHiddenable.findViewById(R.id.tv_activity_mainlist_hidden_toolbar_favorite);
+        tvActivityMainlistHiddenToolbarTitle.setText(strTitle);
+        AutofitHelper.create(tvActivityMainlistHiddenToolbarTitle);
+        AutofitHelper.create(tvActivityMainlistHiddenToolbarFavorite);
+
+        tvActivityMainlistHiddenToolbarTitle.setTypeface(Typefaces.get(this, strFontFileNameAtAssetsFolder_NULLABLE));
+        tvActivityMainlistHiddenToolbarFavorite.setTypeface(Typefaces.get(this, strFontFileNameAtAssetsFolder_NULLABLE));
+
+    }
 
     protected int getScreenHeight() {
         return findViewById(android.R.id.content).getHeight();
     }
 
     public boolean toolbarIsShown() {
-        return ViewHelper.getTranslationY(mToolbar) == 0;
+        return ViewHelper.getTranslationY(mTbHiddenable) == 0;
     }
 
     public boolean toolbarIsHidden() {
-        return ViewHelper.getTranslationY(mToolbar) == -mToolbar.getHeight();
+        return ViewHelper.getTranslationY(mTbHiddenable) == -mTbHiddenable.getHeight();
     }
 
     public void showToolbar() {
@@ -64,23 +113,23 @@ public abstract class BaseActivity<S extends Scrollable> extends AppCompatActivi
     }
 
     public void hideToolbar() {
-        moveToolbar(-mToolbar.getHeight());
+        moveToolbar(-mTbHiddenable.getHeight());
     }
 
     public void moveToolbar(float toTranslationY) {
-        if (ViewHelper.getTranslationY(mToolbar) == toTranslationY) {
+        if (ViewHelper.getTranslationY(mTbHiddenable) == toTranslationY) {
             return;
         }
-        ValueAnimator animator = ValueAnimator.ofFloat(ViewHelper.getTranslationY(mToolbar), toTranslationY).setDuration(200);
+        ValueAnimator animator = ValueAnimator.ofFloat(ViewHelper.getTranslationY(mTbHiddenable), toTranslationY).setDuration(200);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float translationY = (float) animation.getAnimatedValue();
-                ViewHelper.setTranslationY(mToolbar, translationY);
-                ViewHelper.setTranslationY((View) mScrollable, translationY);
-                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) ((View) mScrollable).getLayoutParams();
+                ViewHelper.setTranslationY(mTbHiddenable, translationY);
+                ViewHelper.setTranslationY((View) mScrollableChildView, translationY);
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) ((View) mScrollableChildView).getLayoutParams();
                 lp.height = (int) -translationY + getScreenHeight() - lp.topMargin;
-                ((View) mScrollable).requestLayout();
+                ((View) mScrollableChildView).requestLayout();
             }
         });
         animator.start();

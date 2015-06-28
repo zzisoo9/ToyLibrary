@@ -17,8 +17,13 @@
 package com.zzisoo.toylibrary.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Display;
@@ -35,17 +40,28 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 import com.zzisoo.toylibrary.App;
 import com.zzisoo.toylibrary.Config;
 import com.zzisoo.toylibrary.R;
+import com.zzisoo.toylibrary.SharedPref;
+import com.zzisoo.toylibrary.activity.FlexibleSpaceWithImageRecyclerViewActivity;
+import com.zzisoo.toylibrary.fragment.ProductListViewFragment;
 import com.zzisoo.toylibrary.utils.Typefaces;
+import com.zzisoo.toylibrary.vo.Product;
 import com.zzisoo.toylibrary.vo.Toy;
 
+import org.apache.http.Header;
+
+import java.util.ArrayList;
 import java.util.Random;
 
 import fr.castorflex.android.flipimageview.library.FlipImageView;
+import me.grantland.widget.AutofitHelper;
 
 /**
  * Provide views to RecyclerView with data from mDataSet.
@@ -54,7 +70,10 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
     private static final String TAG = "ToyListAdapter";
 
 
-    private static Toy[] mDataSet;
+    public static ArrayList<Toy> mDataSet;
+
+    private SharedPref mPref;
+    private ArrayList<String> mFavList;
 
     public static int getClickedPostion() {
         return mClickedPostion;
@@ -66,6 +85,12 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
 
     private static int mClickedPostion = 0;
     private static int mClickedOldPostion = 0;
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mPref = new SharedPref(recyclerView.getContext());
+    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -80,37 +105,18 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
 
         public ViewHolder(View v) {
             super(v);
-            int position = getPosition();
+            final int position = getPosition();
 
             Log.e(TAG, "ViewHolder #" + position);
-            // Define click listener for the ViewHolder's View.
-            v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "Element " + getPosition() + " clicked.");
-                    mClickedPostion = getPosition();
-//                    Bundle bundle = new Bundle();
-//                    Gson gson = new Gson();
-//                    Product[] products = null;
-//                    bundle.putString("Products", gson.toJson(products));
-//
-//                    Fragment fragment = new ProductListViewFragment();
-//                    fragment.setArguments(bundle);
-//
-//
-//                    FragmentTransaction transaction = ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction();
-//                    transaction.setCustomAnimations(R.anim.enter, R.anim.exit,R.anim.popenter, R.anim.popexit);
-//                    transaction.addToBackStack(getClass().getSimpleName());
-//                    transaction.replace(R.id.toyListViewWraper, fragment);
-//                    transaction.commit();
-                }
-            });
+
             vh = v;
             mTvTitle = (TextView) v.findViewById(R.id.tvToyTitle);
             mIvToyImage = (ImageView) v.findViewById(R.id.ivToyImage);
             mTvLoading = (TextView) v.findViewById(R.id.tvLoading);
             mTvLoadingBackground = (FrameLayout) v.findViewById(R.id.imageview_Background);
             mFlipImageView = (FlipImageView) v.findViewById(R.id.imageview);
+            AutofitHelper.create(mTvTitle);
+
         }
 
         public TextView getTvTitle() {
@@ -141,7 +147,11 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
     }
 
     public ToyListAdapter(Toy[] dataSet) {
-        mDataSet = dataSet;
+        mDataSet = new ArrayList<Toy>();
+        for (Toy item : dataSet) {
+            mDataSet.add(item);
+        }
+
     }
 
 
@@ -151,7 +161,7 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
         View v = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.toy_item_view, viewGroup, false);
 
-        setItemSize(v);
+        //setItemSize(v);
         TextView tvLoading = (TextView) (v.findViewById(R.id.tvLoading));
         tvLoading.setTypeface(Typefaces.get(v.getContext(), "Satisfy-Regular.ttf"));
 
@@ -159,19 +169,22 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
     }
 
     private void setItemSize(View v) {
-
+        Context c = v.getContext();
         WindowManager wm = (WindowManager) v.getContext().getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         int x = display.getWidth();
         int y = display.getHeight();
         int nwidth = x;
-        Log.e(TAG, ">>>" + x + "/" + y);
-        if (Config.getSpans(v.getResources().getConfiguration()) == 1) {
-            nwidth = x < y ? x : y;
-        } else {
+        if (Config.isLandscape(c)) {
+            ((TextView) v.findViewById(R.id.tvToyTitle)).setMaxLines(Config.TITLE_MAX_LINE_LANDSCAPE);
             nwidth = x > y ? x : y;
+        } else {
+            ((TextView) v.findViewById(R.id.tvToyTitle)).setMaxLines(Config.TITLE_MAX_LINE_PORTRAIT);
+            nwidth = x < y ? x : y;
         }
-        int nItemPerWidth = nwidth / Config.getSpans(v.getResources().getConfiguration());
+        int nItemPerWidth = nwidth / Config.getSpans(c);
+        Log.e(TAG, ">>>" + x + "/" + y + " -->" + nItemPerWidth);
+
         v.findViewById(R.id.imageview_Background).setLayoutParams(
                 new LinearLayout.LayoutParams(nItemPerWidth, nItemPerWidth));
     }
@@ -187,24 +200,39 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
         final TextView textView = viewHolder.getTvTitle();
         final FlipImageView flipImageView = viewHolder.getFlipImageView();
 
-        textView.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener l = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String strPid = mDataSet.get(position).getStrPid();
+
+                if (mPref.getStringArrayList(SharedPref.PREF_FAVORITE_LIST).contains(strPid)) {
+                    mPref.removeStringArrayListItem(SharedPref.PREF_FAVORITE_LIST, strPid);
+                } else {
+                    mPref.addStringArrayListItem(SharedPref.PREF_FAVORITE_LIST, strPid);
+                }
                 flipImageView.toggleFlip();
             }
-        });
-        textView.setText("");
-        setItemSize(v);
-
+        };
+        textView.setOnClickListener(l);
+        flipImageView.setOnClickListener(l);
 
         viewHolder.getTvLoadingBackground().setBackgroundColor(getPastelRBG());
         viewHolder.getTvLoading().setText("ToyToI");
-        if (-1 < position && position < mDataSet.length) {
+        if (-1 < position && position < mDataSet.size()) {
+            setItemSize(v);
 
-            Toy toy = mDataSet[position];
+            mFavList = mPref.getStringArrayList(SharedPref.PREF_FAVORITE_LIST);
+            if (mFavList.contains(mDataSet.get(position).getStrPid())) {
+                flipImageView.setFlipped(true);
+            } else {
+                flipImageView.setFlipped(false);
+            }
+
+            final Toy toy = mDataSet.get(position);
+
             String bgImage = Config.HOST_SERVER_URL + toy.getImage().replace("..", "");
             String strTitle = toy.getTitle();
-            textView.setText(strTitle+"\n");//
+            textView.setText(strTitle);//
 
             ImageLoadingListener fadeImageLoadingListener = new ImageLoadingListener() {
 
@@ -218,7 +246,7 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
 
                 @Override
                 public void onLoadingFailed(String s, View view, FailReason failReason) {
-                    Toast.makeText(view.getContext(), "Network Error : " + failReason.getType().toString() , Toast.LENGTH_LONG).show();
+                    Toast.makeText(view.getContext(), "Network Error : " + failReason.getType().toString(), Toast.LENGTH_LONG).show();
                     ((TextView) ((FrameLayout) view.getParent()).findViewById(R.id.tvLoading)).setText("Error");
                     Log.e(TAG, "onLoadingFailed :" + s);
                 }
@@ -243,7 +271,57 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
             };
 
             App.getImageLoader(v.getContext()).displayImage(bgImage, ivToyImage, fadeImageLoadingListener);
+            ivToyImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
 
+                    asyncHttpClient.get(v.getContext(), Config.URL_DETAIL + mDataSet.get(position).getStrPid(), new AsyncHttpResponseHandler() {
+
+
+                        @Override
+                        public void onSuccess(int i, Header[] headers, byte[] bytes) {
+                            String responseStr = new String(bytes);
+                            Context context = v.getContext();
+
+                            Bundle bundle = new Bundle();
+                            Gson gson = new Gson();
+                            Product[] products = gson.fromJson(responseStr, Product[].class);
+
+                            Intent intent = new Intent(context, FlexibleSpaceWithImageRecyclerViewActivity.class);
+                            intent.putExtra("Products", gson.toJson(products));
+                            intent.putExtra("title", toy.getTitle());
+                            intent.putExtra("image", toy.getImage());
+                            intent.putExtra("favorite", mPref.getStringArrayList(SharedPref.PREF_FAVORITE_LIST).contains(toy.getStrPid()));
+                            context.startActivity(intent);
+
+                            //changeFragment
+                        }
+
+                        private void changeFragment(Bundle bundle) {
+                            Fragment fragment = new ProductListViewFragment();
+                            fragment.setArguments(bundle);
+
+
+                            FragmentTransaction transaction = ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction();
+                            transaction.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.popenter, R.anim.popexit);
+                            transaction.addToBackStack(getClass().getSimpleName());
+                            transaction.replace(R.id.toyListViewWraper, fragment);
+                            transaction.commit();
+                        }
+
+                        @Override
+                        public void onFailure(int i, Header[] headers, byte[] bytes, Throwable throwable) {
+
+                        }
+                    });
+
+
+                    Log.d(TAG, "Element " + position + " clicked.");
+                    mClickedPostion = position;
+//
+                }
+            });
         }
 
     }
@@ -261,7 +339,7 @@ public class ToyListAdapter extends RecyclerView.Adapter<ToyListAdapter.ViewHold
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mDataSet.length;
+        return mDataSet.size();
     }
 
 

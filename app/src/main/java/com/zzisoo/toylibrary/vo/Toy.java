@@ -12,6 +12,8 @@ public class Toy {
      ******************************/
     public int getPid() {
         return pid;
+    }public String getStrPid() {
+        return String.valueOf(pid);
     }
 
     public String getTitle() {
